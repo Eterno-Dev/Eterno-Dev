@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="1200" height="340">
+  <defs>
+    <!-- Vibrant Yellow Gradient -->
+    <linearGradient id="yellowBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFDD00"/>
+      <stop offset="50%" stop-color="#FFC400"/>
+      <stop offset="100%" stop-color="#FFA000"/>
+    </linearGradient>
+
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1E1E"/>
+      <stop offset="100%" stop-color="#0F0F0F"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#804B00" flood-opacity="0.25"/>
+    </filter>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&amp;family=Space+Grotesk:wght@700&amp;display=swap');
+      .title { font-family: 'Space Grotesk', 'Nunito', sans-serif; font-weight: 900; font-size: 78px; fill: #111111; letter-spacing: -1.5px; }
+      .sub { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 22px; fill: #3D2900; letter-spacing: 0.5px; }
+      .btn-text { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 15px; fill: #FFFFFF; letter-spacing: 2.5px; }
+      
+      @keyframes floatBtn {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-4px); }
+      }
+      .btn-hover { animation: floatBtn 2.5s ease-in-out infinite; }
+    </style>
+  </defs>
+
+  <!-- Background with smooth rounded corners -->
+  <rect width="1200" height="340" rx="20" fill="url(#yellowBg)"/>
+
+  <!-- Subtle Ambient Glow Overlay -->
+  <circle cx="100" cy="50" r="180" fill="#FFF275" opacity="0.4" filter="url(#shadow)"/>
+  <circle cx="1100" cy="280" r="220" fill="#FF8800" opacity="0.25"/>
+
+  <!-- Content Centered -->
+  <g transform="translate(600, 135)" text-anchor="middle">
+    <!-- Title -->
+    <text x="0" y="0" class="title">EternoDev</text>
+    
+    <!-- Subtitle -->
+    <text x="0" y="44" class="sub">Desarrollador de Videojuegos &amp; Creador de Contenido</text>
+
+    <!-- Open Web Button -->
+    <g class="btn-hover" transform="translate(0, 85)">
+      <rect x="-105" y="-22" width="210" height="46" rx="23" fill="url(#btnGrad)" filter="url(#shadow)"/>
+      <text x="-8" y="6" class="btn-text">OPEN WEB</text>
+      <!-- Arrow Icon -->
+      <path d="M60,-3 L66,3 L60,9 M65,3 L48,3" stroke="#FFDD00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>
