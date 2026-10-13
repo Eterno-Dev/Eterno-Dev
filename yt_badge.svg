@@ -1,22 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 36" width="156" height="36">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185 44" width="185" height="44">
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap');
       .yt-badge-text {
         font-family: 'Roboto', -apple-system, sans-serif;
         font-weight: 700;
-        font-size: 26px;
+        font-size: 32px;
         fill: #FF0000;
         letter-spacing: -0.5px;
       }
     </style>
   </defs>
-  <!-- Red YouTube Text -->
-  <text x="0" y="27" class="yt-badge-text">YouTube</text>
+  <!-- Red YouTube Text in Roboto Bold -->
+  <text x="0" y="33" class="yt-badge-text">YouTube</text>
   
   <!-- Red Rounded YouTube Play Icon -->
-  <g transform="translate(112, 5)">
-    <rect x="0" y="0" width="38" height="26" rx="8" fill="#FF0000"/>
-    <polygon points="15,7 26,13 15,19" fill="#FFFFFF"/>
+  <g transform="translate(136, 7)">
+    <rect x="0" y="0" width="45" height="30" rx="9" fill="#FF0000"/>
+    <polygon points="18,8 31,15 18,22" fill="#FFFFFF"/>
   </g>
 </svg>
