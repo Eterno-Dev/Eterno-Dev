@@ -15,7 +15,7 @@
   <text x="0" y="32" class="yt-badge-text">YouTube</text>
   
   <!-- Red Rounded YouTube Play Icon placed with 44px gap to guarantee zero overlap -->
-  <g transform="translate(160, 6)">
+  <g transform="translate(145, 6)">
     <rect x="0" y="0" width="48" height="32" rx="10" fill="#FF0000"/>
     <polygon points="19,9 33,16 19,23" fill="#FFFFFF"/>
   </g>
