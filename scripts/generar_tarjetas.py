@@ -2,13 +2,9 @@
 =============================================================================
 GENERADOR Y ACTUALIZADOR AUTOMÁTICO DE TARJETAS DE YOUTUBE PARA ETERNODEV
 =============================================================================
-Este script:
-1. Permite actualizar de forma 100% automática las visitas y fecha relativa
-   de los vídeos conectándose a YouTube sin necesidad de API keys.
-2. Genera los archivos SVG (yt_card_1.svg, yt_card_2.svg, etc.) con el diseño
-   idéntico al feed oficial de YouTube.
-3. Permite añadir nuevos vídeos en el array VIDEOS.
-4. Puede ejecutarse manualmente o de forma programada diaria mediante GitHub Actions.
+Ubicación de archivos:
+- Miniaturas e iconos: assets/thumbnail/
+- Tarjetas SVG generadas: assets/svg/
 =============================================================================
 """
 
@@ -17,12 +13,20 @@ import urllib.request
 import base64
 import json
 import re
-from PIL import Image
+
+# Directorios de trabajo relativos a la raíz del repositorio
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+THUMB_DIR = os.path.join(ASSETS_DIR, "thumbnail")
+SVG_DIR = os.path.join(ASSETS_DIR, "svg")
+
+os.makedirs(SVG_DIR, exist_ok=True)
+os.makedirs(THUMB_DIR, exist_ok=True)
 
 CHANNEL_NAME = "EternoDev"
-AVATAR_PATH = "logo.png"
+AVATAR_PATH = os.path.join(THUMB_DIR, "logo.png")
 
-# Lista de vídeos a mostrar en el feed (puedes añadir o cambiar los que quieras)
+# Lista de vídeos a mostrar en el feed
 VIDEOS = [
     {
         "id": "wjoGjOxCTCQ",
@@ -59,32 +63,28 @@ VIDEOS = [
 ]
 
 def update_video_stats(video):
-    """Obtiene de forma dinámica las visualizaciones y fecha en tiempo real"""
     vid_id = video["id"]
     try:
         url = f"https://www.youtube.com/watch?v={vid_id}"
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
         html = urllib.request.urlopen(req, timeout=8).read().decode('utf-8', errors='ignore')
         
-        # 1. Short view count text
         sv = re.findall(r'"shortViewCount":\{"simpleText":"([^"]+)"', html)
         views_str = sv[0] if sv else None
         
-        # 2. Date text (ej: hace 1 mes)
         dt = re.findall(r'"dateText":\{"simpleText":"([^"]+)"', html)
         date_str = dt[0] if dt else None
         
         if views_str and date_str:
             video["views"] = f"{views_str} • {date_str}"
-            print(f"  [+] Datos actualizados en vivo para {vid_id}: {video['views']}")
+            print(f"  [+] En vivo: {vid_id} -> {video['views']}")
         elif views_str:
-            # mantener parte de la fecha existente
             old_parts = video["views"].split("•")
             time_part = old_parts[1].strip() if len(old_parts) > 1 else ""
             video["views"] = f"{views_str} • {time_part}"
-            print(f"  [+] Visitas actualizadas en vivo para {vid_id}: {video['views']}")
+            print(f"  [+] En vivo: {vid_id} -> {video['views']}")
     except Exception as e:
-        print(f"  [-] Manteniendo datos guardados para {vid_id} ({e})")
+        print(f"  [-] Manteniendo datos para {vid_id} ({e})")
 
 def get_base64_avatar():
     if os.path.exists(AVATAR_PATH):
@@ -94,12 +94,14 @@ def get_base64_avatar():
 
 def get_base64_thumbnail(video):
     local_file = video.get("thumbnail_file")
-    if local_file and os.path.exists(local_file):
-        with open(local_file, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8"), "png" if local_file.endswith(".png") else "jpeg"
+    if local_file:
+        full_local = os.path.join(THUMB_DIR, local_file)
+        if os.path.exists(full_local):
+            with open(full_local, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8"), "png" if full_local.endswith(".png") else "jpeg"
     
     vid_id = video["id"]
-    cache_file = f"thumb_{vid_id}.jpg"
+    cache_file = os.path.join(THUMB_DIR, f"thumb_{vid_id}.jpg")
     if not os.path.exists(cache_file):
         for quality in ["maxresdefault.jpg", "hqdefault.jpg"]:
             try:
@@ -121,23 +123,10 @@ def get_base64_thumbnail(video):
 def generate_card(video, index, b64_avatar):
     w, h = 580, 440
     b64_thumb, mime_type = get_base64_thumbnail(video)
-    
-    # Checkmark icon exact YouTube vector
     check_path = "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"
 
-    # Exact adjustments:
-    # 1. Badge duration:
-    #    Lower on Y and more to the right:
-    #    Thumbnail height is 326.
-    #    Badge bottom-right placed at x = (w - 12), y = 314 -> transform translate(w - 68, 298)
-    #    Duration badge is now beautifully anchored at the bottom-right corner!
-    #
-    # 2. Verified checkmark:
-    #    Before: translate(74, -11). It was too low!
-    #    Now: translate(72, -13) with baseline alignment matching the 14.5px font height!
-
-    badge_x = w - 68  # 512
-    badge_y = 298     # moved lower and right
+    badge_x = w - 68
+    badge_y = 298
 
     svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">
   <defs>
@@ -161,7 +150,7 @@ def generate_card(video, index, b64_avatar):
     <image href="data:image/{mime_type};base64,{b64_thumb}" x="0" y="0" width="{w}" height="326" preserveAspectRatio="xMidYMid slice"/>
   </g>
 
-  <!-- Duration Badge (bottom-right of thumbnail, lower & right) -->
+  <!-- Duration Badge (bottom-right of thumbnail) -->
   <g transform="translate({badge_x}, {badge_y})">
     <rect x="-6" y="-13" width="60" height="23" rx="4" fill="rgba(0,0,0,0.85)"/>
     <text x="24" y="3" text-anchor="middle" class="yt-time">{video["duration"]}</text>
@@ -183,7 +172,7 @@ def generate_card(video, index, b64_avatar):
       <!-- Title -->
       <text x="0" y="0" class="yt-title">{video["title"]}</text>
       
-      <!-- Channel name + Verified checkmark (perfectly aligned with text center) -->
+      <!-- Channel name + Verified checkmark -->
       <g transform="translate(0, 24)">
         <text x="0" y="0" class="yt-channel">{CHANNEL_NAME}</text>
         <g transform="translate(72, -13) scale(0.65)" fill="#AAAAAA">
@@ -204,21 +193,21 @@ def generate_card(video, index, b64_avatar):
   </g>
 </svg>'''
 
-    out_file = f"yt_card_{index}.svg"
+    out_file = os.path.join(SVG_DIR, f"yt_card_{index}.svg")
     with open(out_file, "w", encoding="utf-8") as f:
         f.write(svg)
     print(f"[OK] Generada tarjeta: {out_file} - {video['title']}")
 
 def main():
     print("==================================================")
-    print("  GENERANDO Y ACTUALIZANDO TARJETAS DE YOUTUBE")
+    print("  GENERANDO TARJETAS EN assets/svg/")
     print("==================================================")
     b64_avatar = get_base64_avatar()
     for idx, video in enumerate(VIDEOS, start=1):
         print(f"\n[>] Procesando video {idx}: {video['id']}")
         update_video_stats(video)
         generate_card(video, idx, b64_avatar)
-    print("\nTodas las tarjetas han sido actualizadas con exito!")
+    print("\nTodas las tarjetas han sido actualizadas con exito en assets/svg/!")
 
 if __name__ == "__main__":
     main()
