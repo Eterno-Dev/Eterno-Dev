@@ -1,20 +1,20 @@
 <div align="center">
 
-  <!-- CABECERA AMARILLA (#FBDA50) CON LOGO ETERNOWEB & BOTÓN OPEN WEB -->
+  <!-- CABECERA AMARILLA (#FBDA50) CON DEGRADADOS, LOGO ETERNODEV Y BOTÓN OPEN WEB BLANCO -->
   <a href="https://eternodev.com" target="_blank">
     <img src="./header.svg" width="100%" alt="EternoDev - Open Web">
   </a>
 
   <br><br>
 
-  <!-- SEPARADOR / SECCIÓN DE VÍDEOS DE YOUTUBE -->
-  <a href="https://www.youtube.com/@eternodev" target="_blank">
-    <img src="./youtube_header.svg" width="60%" alt="Vídeos de YouTube - EternoDev">
-  </a>
+  <!-- TÍTULO DE SECCIÓN ESCRITO EN MARKDOWN CON ENLACE DIRECTO A YOUTUBE -->
+  <h2>
+    Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./yt_badge.svg" height="28" alt="YouTube" valign="middle"></a>
+  </h2>
 
-  <br><br>
+  <br>
 
-  <!-- FEED 2x2 SIN BORDES DE TABLA (PÁRRAFOS CENTRADOS PARA EVITAR LÍNEAS DE TABLA EN GITHUB) -->
+  <!-- FEED 2x2 SIN BORDES DE TABLA (PÁRRAFOS CENTRADOS) -->
   <p align="center">
     <a href="https://www.youtube.com/watch?v=wjoGjOxCTCQ" target="_blank">
       <img src="./yt_card_1.svg" width="48.5%" alt="¡REHICE el Juego de mis SUEÑOS! - DevBlog 2">
