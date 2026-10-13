@@ -1,14 +1,14 @@
 <div align="center">
 
-  <!-- CABECERA AMARILLA (#FBDA50) CON DEGRADADO RADIAL, IMAGEN ETERNODEV TRANSPARENTE Y ABRIR WEB BLANCO -->
+  <!-- CABECERA AMARILLA (#FBDA50) CON DEGRADADO RADIAL, IMAGEN ETERNODEV Y ABRIR WEB -->
   <a href="https://eternodev.com" target="_blank">
     <img src="./assets/svg/header.svg" width="100%" alt="EternoDev - Open Web">
   </a>
 
-  <!-- TÍTULO DE SECCIÓN CON MARGEN AJUSTADO Y YOUTUBE MÁS GRANDE -->
+  <!-- SECCIÓN VÍDEOS DE YOUTUBE -->
   <h1>Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./assets/svg/yt_badge.svg" height="40" alt="YouTube" valign="middle"></a></h1>
 
-  <!-- FEED 2x2 SIN BORDES DE TABLA (PÁRRAFOS CENTRADOS) -->
+  <!-- FEED YOUTUBE 2x2 (CUADRÍCULA SIN BORDES) -->
   <p align="center">
     <a href="https://www.youtube.com/watch?v=wjoGjOxCTCQ" target="_blank">
       <img src="./assets/svg/yt_card_1.svg" width="48.5%" alt="¡REHICE el Juego de mis SUEÑOS! - DevBlog 2">
@@ -25,6 +25,42 @@
     &nbsp;
     <a href="https://www.youtube.com/watch?v=F1-R5hIjGLM" target="_blank">
       <img src="./assets/svg/yt_card_4.svg" width="48.5%" alt="¡Creando Mi Propio ROGUELIKE Desde CERO!- DevBlog 1">
+    </a>
+  </p>
+
+  <!-- SECCIÓN VIDEOJUEGOS EN ITCH.IO -->
+  <p align="center">
+    <a href="https://eternodev.itch.io" target="_blank">
+      <img src="./assets/svg/itch_badge.svg" height="40" alt="Juegos en Itch.io" valign="middle">
+    </a>
+  </p>
+
+  <!-- FEED ITCH.IO 2x3 (5 JUEGOS + TARJETA DE CATÁLOGO) -->
+  <p align="center">
+    <a href="https://eternodev.itch.io/castlecat-rpg" target="_blank">
+      <img src="./assets/svg/itch_card_1.svg" width="48.5%" alt="CastleCat RPG">
+    </a>
+    &nbsp;
+    <a href="https://eternodev.itch.io/oonga-bunga" target="_blank">
+      <img src="./assets/svg/itch_card_2.svg" width="48.5%" alt="Oonga Bunga!">
+    </a>
+  </p>
+  <p align="center">
+    <a href="https://eternodev.itch.io/soap-dodger" target="_blank">
+      <img src="./assets/svg/itch_card_3.svg" width="48.5%" alt="Soap Dodger">
+    </a>
+    &nbsp;
+    <a href="https://eternodev.itch.io/space-blitz" target="_blank">
+      <img src="./assets/svg/itch_card_4.svg" width="48.5%" alt="Space Blitz">
+    </a>
+  </p>
+  <p align="center">
+    <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank">
+      <img src="./assets/svg/itch_card_5.svg" width="48.5%" alt="Verdades Incompletas">
+    </a>
+    &nbsp;
+    <a href="https://eternodev.itch.io" target="_blank">
+      <img src="./assets/svg/itch_card_6.svg" width="48.5%" alt="Catálogo completo de EternoDev en Itch.io">
     </a>
   </p>
 

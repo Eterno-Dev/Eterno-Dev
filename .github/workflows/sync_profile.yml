@@ -1,0 +1,45 @@
+name: Auto-Sync YouTube & Itch.io Profile
+
+on:
+  schedule:
+    # Se ejecuta cada 4 horas automáticamente
+    - cron: '0 */4 * * *'
+  # Permite ejecutarlo manualmente en cualquier momento desde la pestaña Actions con un clic
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-profile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar Sincronización Maestra (YouTube + Itch.io)
+        env:
+          ITCH_API_KEY: ${{ secrets.ITCH_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          python scripts/sync_profile.py
+
+      - name: Guardar cambios si hay actualizaciones
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/ README.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: auto-sync YouTube & Itch.io cards [skip ci]"
+            git push origin main
+          else
+            echo "No hay cambios nuevos para sincronizar."
+          fi
