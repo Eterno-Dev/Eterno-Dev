@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" width="1200" height="260">
+  <defs>
+    <linearGradient id="statsBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0D0722"/>
+      <stop offset="100%" stop-color="#1A0D3C"/>
+    </linearGradient>
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5E98"/>
+      <stop offset="100%" stop-color="#E11D48"/>
+    </linearGradient>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;display=swap');
+      .stat-num { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 58px; fill: #FFFFFF; letter-spacing: -1px; }
+      .stat-sub { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; fill: #A78BFA; letter-spacing: 2px; }
+      .stat-intro { font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 16px; fill: #C4B5FD; }
+      @keyframes floatHeart {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-12px) rotate(4deg); }
+      }
+      .floating-heart { animation: floatHeart 4.5s ease-in-out infinite; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="260" fill="url(#statsBg)"/>
+
+  <!-- Floating 3D Pink Heart (CrazyGames style) on right -->
+  <g class="floating-heart" transform="translate(1000, 70)">
+    <path d="M50,15 C40,-5 10,-5 0,15 C-15,35 15,65 50,90 C85,65 115,35 100,15 C90,-5 60,-5 50,15 Z" fill="url(#heartGrad)"/>
+    <!-- 3D Heart Depth Side -->
+    <path d="M50,90 C85,65 115,35 100,15 C108,18 115,28 110,40 C95,65 65,95 50,105 L50,90 Z" fill="#9F1239" opacity="0.8"/>
+  </g>
+
+  <!-- 3 Big Metric Columns -->
+  <!-- Col 1 -->
+  <g transform="translate(180, 70)">
+    <text x="0" y="0" text-anchor="middle" class="stat-intro">Creando proyectos desde</text>
+    <text x="0" y="60" text-anchor="middle" class="stat-num">+9 AÑOS</text>
+    <text x="0" y="95" text-anchor="middle" class="stat-sub">SOLO GAME DEV</text>
+  </g>
+
+  <!-- Col 2 -->
+  <g transform="translate(540, 70)">
+    <text x="0" y="0" text-anchor="middle" class="stat-intro">Vídeos y devlogs en YouTube</text>
+    <text x="0" y="60" text-anchor="middle" class="stat-num">@eternodev</text>
+    <text x="0" y="95" text-anchor="middle" class="stat-sub">CANAL OFICIAL</text>
+  </g>
+
+  <!-- Col 3 -->
+  <g transform="translate(900, 70)">
+    <text x="0" y="0" text-anchor="middle" class="stat-intro">Proyectos indie en Itch.io</text>
+    <text x="0" y="60" text-anchor="middle" class="stat-num">3 JUEGOS</text>
+    <text x="0" y="95" text-anchor="middle" class="stat-sub">LISTOS PARA JUGAR</text>
+  </g>
+
+  <!-- Bottom Wave Divider connecting to video cards -->
+  <path d="M0,260 L0,225 Q300,190 600,230 T1200,225 L1200,260 Z" fill="#140A2E"/>
+</svg>
