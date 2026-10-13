@@ -1,18 +1,12 @@
 <div align="center">
 
-  <!-- CABECERA AMARILLA (#FBDA50) CON DEGRADADOS ORIGINALES, IMAGEN ETERNODEV PEQUEÑA Y BOTÓN OPEN WEB BLANCO -->
+  <!-- CABECERA AMARILLA (#FBDA50) CON DEGRADADO RADIAL, IMAGEN ETERNODEV TRANSPARENTE Y ABRIR WEB BLANCO -->
   <a href="https://eternodev.com" target="_blank">
     <img src="./header.svg" width="100%" alt="EternoDev - Open Web">
   </a>
 
-  <br><br>
-
-  <!-- TÍTULO DE SECCIÓN MÁS GRANDE ESCRITO EN MARKDOWN CON ENLACE DIRECTO A YOUTUBE -->
-  <h1>
-    Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./yt_badge.svg" height="34" alt="YouTube" valign="middle"></a>
-  </h1>
-
-  <br>
+  <!-- TÍTULO DE SECCIÓN CON MARGEN AJUSTADO Y YOUTUBE MÁS GRANDE -->
+  <h1>Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./yt_badge.svg" height="40" alt="YouTube" valign="middle"></a></h1>
 
   <!-- FEED 2x2 SIN BORDES DE TABLA (PÁRRAFOS CENTRADOS) -->
   <p align="center">
