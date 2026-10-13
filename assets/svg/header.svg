@@ -22,8 +22,8 @@
         letter-spacing: 3.5px;
       }
       @keyframes bounceArrow {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(8px); }
+        0%, 100% { transform: translateY(10px); }
+        50% { transform: translateY(18px); }
       }
       .arrow-bounce { animation: bounceArrow 1.8s ease-in-out infinite; }
     </style>
