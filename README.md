@@ -35,32 +35,31 @@
     </a>
   </p>
 
-  <!-- FEED ITCH.IO 2x3 (5 JUEGOS + TARJETA DE CATÁLOGO) -->
+  <!-- FEED ITCH.IO 3x2 (CUADRÍCULA DE 3 COLUMNAS: 5 JUEGOS + 1 CATÁLOGO) -->
   <p align="center">
     <a href="https://eternodev.itch.io/castlecat-rpg" target="_blank">
-      <img src="./assets/svg/itch_card_1.svg" width="48.5%" alt="CastleCat RPG">
+      <img src="./assets/svg/itch_card_1.svg" width="32%" alt="CastleCat RPG">
     </a>
     &nbsp;
     <a href="https://eternodev.itch.io/oonga-bunga" target="_blank">
-      <img src="./assets/svg/itch_card_2.svg" width="48.5%" alt="Oonga Bunga!">
-    </a>
-  </p>
-  <p align="center">
-    <a href="https://eternodev.itch.io/soap-dodger" target="_blank">
-      <img src="./assets/svg/itch_card_3.svg" width="48.5%" alt="Soap Dodger">
+      <img src="./assets/svg/itch_card_2.svg" width="32%" alt="Oonga Bunga!">
     </a>
     &nbsp;
-    <a href="https://eternodev.itch.io/space-blitz" target="_blank">
-      <img src="./assets/svg/itch_card_4.svg" width="48.5%" alt="Space Blitz">
+    <a href="https://eternodev.itch.io/soap-dodger" target="_blank">
+      <img src="./assets/svg/itch_card_3.svg" width="32%" alt="Soap Dodger">
     </a>
   </p>
   <p align="center">
+    <a href="https://eternodev.itch.io/space-blitz" target="_blank">
+      <img src="./assets/svg/itch_card_4.svg" width="32%" alt="Space Blitz">
+    </a>
+    &nbsp;
     <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank">
-      <img src="./assets/svg/itch_card_5.svg" width="48.5%" alt="Verdades Incompletas">
+      <img src="./assets/svg/itch_card_5.svg" width="32%" alt="Verdades Incompletas">
     </a>
     &nbsp;
     <a href="https://eternodev.itch.io" target="_blank">
-      <img src="./assets/svg/itch_card_6.svg" width="48.5%" alt="Catálogo completo de EternoDev en Itch.io">
+      <img src="./assets/svg/itch_card_6.svg" width="32%" alt="Catálogo completo de EternoDev en Itch.io">
     </a>
   </p>
 
