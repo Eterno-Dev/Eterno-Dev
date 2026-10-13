@@ -1,0 +1,38 @@
+name: Actualizar Tarjetas de YouTube Automáticamente
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 06:00 UTC (ajustable)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña 'Actions' de GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  update-youtube-cards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          pip install pillow
+
+      - name: Ejecutar actualizador de tarjetas
+        run: |
+          python generar_tarjetas.py
+
+      - name: Hacer commit y push si hay cambios
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add yt_card_*.svg
+          git commit -m "chore(cron): actualización diaria de estadísticas de YouTube" || echo "No hay cambios que commitear"
+          git push

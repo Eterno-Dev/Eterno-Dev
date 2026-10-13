@@ -1,16 +1,14 @@
 """
 =============================================================================
-GENERADOR AUTOMÁTICO DE TARJETAS DE YOUTUBE PARA EL PERFIL DE GITHUB
-EternoDev - @eternodev
+GENERADOR Y ACTUALIZADOR AUTOMÁTICO DE TARJETAS DE YOUTUBE PARA ETERNODEV
 =============================================================================
-Instrucciones:
-1. Asegúrate de tener Python 3 instalado y Pillow (pip install pillow).
-2. Añade o edita los vídeos en la lista `VIDEOS` abajo.
-3. Si tienes una miniatura personalizada en PNG/JPG, pon su ruta en 'thumbnail_path'
-   o déjalo vacío para que la descargue automáticamente de YouTube.
-4. Ejecuta:
-   python generar_tarjetas.py
-5. Las tarjetas se generarán como `yt_card_1.svg`, `yt_card_2.svg`, etc.
+Este script:
+1. Permite actualizar de forma 100% automática las visitas y fecha relativa
+   de los vídeos conectándose a YouTube sin necesidad de API keys.
+2. Genera los archivos SVG (yt_card_1.svg, yt_card_2.svg, etc.) con el diseño
+   idéntico al feed oficial de YouTube.
+3. Permite añadir nuevos vídeos en el array VIDEOS.
+4. Puede ejecutarse manualmente o de forma programada diaria mediante GitHub Actions.
 =============================================================================
 """
 
@@ -18,13 +16,13 @@ import os
 import urllib.request
 import base64
 import json
+import re
 from PIL import Image
 
-# Configuración del canal
 CHANNEL_NAME = "EternoDev"
 AVATAR_PATH = "logo.png"
 
-# Lista de vídeos a mostrar en el feed
+# Lista de vídeos a mostrar en el feed (puedes añadir o cambiar los que quieras)
 VIDEOS = [
     {
         "id": "wjoGjOxCTCQ",
@@ -60,6 +58,34 @@ VIDEOS = [
     }
 ]
 
+def update_video_stats(video):
+    """Obtiene de forma dinámica las visualizaciones y fecha en tiempo real"""
+    vid_id = video["id"]
+    try:
+        url = f"https://www.youtube.com/watch?v={vid_id}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        html = urllib.request.urlopen(req, timeout=8).read().decode('utf-8', errors='ignore')
+        
+        # 1. Short view count text
+        sv = re.findall(r'"shortViewCount":\{"simpleText":"([^"]+)"', html)
+        views_str = sv[0] if sv else None
+        
+        # 2. Date text (ej: hace 1 mes)
+        dt = re.findall(r'"dateText":\{"simpleText":"([^"]+)"', html)
+        date_str = dt[0] if dt else None
+        
+        if views_str and date_str:
+            video["views"] = f"{views_str} • {date_str}"
+            print(f"  [+] Datos actualizados en vivo para {vid_id}: {video['views']}")
+        elif views_str:
+            # mantener parte de la fecha existente
+            old_parts = video["views"].split("•")
+            time_part = old_parts[1].strip() if len(old_parts) > 1 else ""
+            video["views"] = f"{views_str} • {time_part}"
+            print(f"  [+] Visitas actualizadas en vivo para {vid_id}: {video['views']}")
+    except Exception as e:
+        print(f"  [-] Manteniendo datos guardados para {vid_id} ({e})")
+
 def get_base64_avatar():
     if os.path.exists(AVATAR_PATH):
         with open(AVATAR_PATH, "rb") as f:
@@ -67,39 +93,51 @@ def get_base64_avatar():
     return ""
 
 def get_base64_thumbnail(video):
-    # Si existe el archivo local de la miniatura, úsalo
     local_file = video.get("thumbnail_file")
     if local_file and os.path.exists(local_file):
         with open(local_file, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8"), "png" if local_file.endswith(".png") else "jpeg"
     
-    # Si no, descárgalo automáticamente de YouTube
     vid_id = video["id"]
     cache_file = f"thumb_{vid_id}.jpg"
     if not os.path.exists(cache_file):
-        thumb_url = f"https://i.ytimg.com/vi/{vid_id}/maxresdefault.jpg"
-        try:
-            req = urllib.request.Request(thumb_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as resp:
-                data = resp.read()
-                with open(cache_file, 'wb') as f:
-                    f.write(data)
-        except Exception:
-            # Fallback a hqdefault
-            thumb_url = f"https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg"
-            req = urllib.request.Request(thumb_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as resp:
-                data = resp.read()
-                with open(cache_file, 'wb') as f:
-                    f.write(data)
+        for quality in ["maxresdefault.jpg", "hqdefault.jpg"]:
+            try:
+                thumb_url = f"https://i.ytimg.com/vi/{vid_id}/{quality}"
+                req = urllib.request.Request(thumb_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req) as resp:
+                    data = resp.read()
+                    with open(cache_file, 'wb') as f:
+                        f.write(data)
+                break
+            except Exception:
+                continue
     
-    with open(cache_file, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8"), "jpeg"
+    if os.path.exists(cache_file):
+        with open(cache_file, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8"), "jpeg"
+    return "", "jpeg"
 
 def generate_card(video, index, b64_avatar):
     w, h = 580, 440
     b64_thumb, mime_type = get_base64_thumbnail(video)
+    
+    # Checkmark icon exact YouTube vector
     check_path = "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"
+
+    # Exact adjustments:
+    # 1. Badge duration:
+    #    Lower on Y and more to the right:
+    #    Thumbnail height is 326.
+    #    Badge bottom-right placed at x = (w - 12), y = 314 -> transform translate(w - 68, 298)
+    #    Duration badge is now beautifully anchored at the bottom-right corner!
+    #
+    # 2. Verified checkmark:
+    #    Before: translate(74, -11). It was too low!
+    #    Now: translate(72, -13) with baseline alignment matching the 14.5px font height!
+
+    badge_x = w - 68  # 512
+    badge_y = 298     # moved lower and right
 
     svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">
   <defs>
@@ -123,10 +161,10 @@ def generate_card(video, index, b64_avatar):
     <image href="data:image/{mime_type};base64,{b64_thumb}" x="0" y="0" width="{w}" height="326" preserveAspectRatio="xMidYMid slice"/>
   </g>
 
-  <!-- Duration Badge (bottom-right of thumbnail) -->
-  <g transform="translate({w - 65}, 290)">
-    <rect x="-8" y="-14" width="60" height="24" rx="4" fill="rgba(0,0,0,0.85)"/>
-    <text x="22" y="3" text-anchor="middle" class="yt-time">{video["duration"]}</text>
+  <!-- Duration Badge (bottom-right of thumbnail, lower & right) -->
+  <g transform="translate({badge_x}, {badge_y})">
+    <rect x="-6" y="-13" width="60" height="23" rx="4" fill="rgba(0,0,0,0.85)"/>
+    <text x="24" y="3" text-anchor="middle" class="yt-time">{video["duration"]}</text>
   </g>
 
   <!-- Info Area below thumbnail -->
@@ -145,10 +183,10 @@ def generate_card(video, index, b64_avatar):
       <!-- Title -->
       <text x="0" y="0" class="yt-title">{video["title"]}</text>
       
-      <!-- Channel name + Verified checkmark -->
+      <!-- Channel name + Verified checkmark (perfectly aligned with text center) -->
       <g transform="translate(0, 24)">
         <text x="0" y="0" class="yt-channel">{CHANNEL_NAME}</text>
-        <g transform="translate(74, -11) scale(0.65)" fill="#AAAAAA">
+        <g transform="translate(72, -13) scale(0.65)" fill="#AAAAAA">
           <path d="{check_path}"/>
         </g>
       </g>
@@ -173,10 +211,12 @@ def generate_card(video, index, b64_avatar):
 
 def main():
     print("==================================================")
-    print("  GENERANDO TARJETAS DE YOUTUBE PARA ETERNODEV")
+    print("  GENERANDO Y ACTUALIZANDO TARJETAS DE YOUTUBE")
     print("==================================================")
     b64_avatar = get_base64_avatar()
     for idx, video in enumerate(VIDEOS, start=1):
+        print(f"\n[>] Procesando video {idx}: {video['id']}")
+        update_video_stats(video)
         generate_card(video, idx, b64_avatar)
     print("\nTodas las tarjetas han sido actualizadas con exito!")
 
