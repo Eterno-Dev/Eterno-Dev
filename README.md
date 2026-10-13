@@ -24,7 +24,7 @@
     </a>
     &nbsp;
     <a href="https://www.youtube.com/watch?v=F1-R5hIjGLM" target="_blank">
-      <img src="./yt_card_4.svg" width="48.5%" alt="¡Creando Mi Propio JUEGO Desde CERO! - DevBlog 1">
+      <img src="./yt_card_4.svg" width="48.5%" alt="¡Creando Mi Propio ROGUELIKE Desde CERO!- DevBlog 1">
     </a>
   </p>
 
