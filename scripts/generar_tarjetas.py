@@ -2,9 +2,15 @@
 =============================================================================
 GENERADOR Y ACTUALIZADOR AUTOMÁTICO DE TARJETAS DE YOUTUBE PARA ETERNODEV
 =============================================================================
-Ubicación de archivos:
-- Miniaturas e iconos: assets/thumbnail/
-- Tarjetas SVG generadas: assets/svg/
+Características:
+1. Formato exacto de YouTube con soporte inteligente para títulos de 1 o 2 líneas.
+   - Altura estándar constante (viewBox 0 0 580 445) para que todas las tarjetas
+     tengan exactamente las mismas dimensiones y encajen a la perfección.
+   - Si un título es largo (ej. "¡Creando Mi Propio ROGUELIKE Desde CERO!- DevBlog 1"),
+     se divide limpiamente en 2 líneas sin desbordarse ni cortarse.
+   - Si excediese 2 líneas, añade puntos suspensivos (...) tal como hace YouTube nativo.
+2. Actualización automática de estadísticas de visualizaciones y fecha en tiempo real.
+3. Lee miniaturas desde assets/thumbnail/ y exporta las tarjetas a assets/svg/.
 =============================================================================
 """
 
@@ -14,7 +20,6 @@ import base64
 import json
 import re
 
-# Directorios de trabajo relativos a la raíz del repositorio
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 THUMB_DIR = os.path.join(ASSETS_DIR, "thumbnail")
@@ -61,6 +66,45 @@ VIDEOS = [
         "thumbnail_file": "thumb_roguelike.png"
     }
 ]
+
+def wrap_youtube_title(title, max_chars=34):
+    """
+    Divide un título en un máximo de 2 líneas con límite de caracteres.
+    Si supera las 2 líneas, trunca con puntos suspensivos (...) como YouTube nativo.
+    """
+    words = title.split()
+    line1 = []
+    line2 = []
+    curr_len = 0
+    
+    for w in words:
+        if not line2:
+            needed = len(w) + (1 if line1 else 0)
+            if curr_len + needed <= max_chars:
+                line1.append(w)
+                curr_len += needed
+            else:
+                line2.append(w)
+                curr_len = len(w)
+        else:
+            needed = len(w) + 1
+            if curr_len + needed <= max_chars:
+                line2.append(w)
+                curr_len += needed
+            else:
+                # Excede la 2da línea -> truncar con '...'
+                line2_str = " ".join(line2)
+                if len(line2_str) + len(w) + 1 > max_chars:
+                    if not line2_str.endswith("..."):
+                        if len(line2_str) <= max_chars - 3:
+                            line2.append("...")
+                        else:
+                            line2[-1] = line2[-1][:max(1, max_chars - 4)] + "..."
+                break
+
+    l1 = " ".join(line1)
+    l2 = " ".join(line2)
+    return l1, l2
 
 def update_video_stats(video):
     vid_id = video["id"]
@@ -121,12 +165,27 @@ def get_base64_thumbnail(video):
     return "", "jpeg"
 
 def generate_card(video, index, b64_avatar):
-    w, h = 580, 440
+    # Dimensiones uniformes para todas las tarjetas (580 x 445)
+    w, h = 580, 445
     b64_thumb, mime_type = get_base64_thumbnail(video)
     check_path = "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"
 
     badge_x = w - 68
     badge_y = 298
+
+    # Procesar líneas de título
+    line1, line2 = wrap_youtube_title(video["title"], max_chars=35)
+    
+    # Construcción del bloque de texto según si tiene 1 o 2 líneas
+    if line2:
+        title_svg = f'''<text x="0" y="0" class="yt-title">{line1}</text>
+      <text x="0" y="24" class="yt-title">{line2}</text>'''
+        channel_y = 48
+        meta_y = 68
+    else:
+        title_svg = f'''<text x="0" y="0" class="yt-title">{line1}</text>'''
+        channel_y = 25
+        meta_y = 46
 
     svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">
   <defs>
@@ -169,11 +228,11 @@ def generate_card(video, index, b64_avatar):
 
     <!-- Details -->
     <g transform="translate(58, 14)">
-      <!-- Title -->
-      <text x="0" y="0" class="yt-title">{video["title"]}</text>
+      <!-- Title (1 or 2 lines) -->
+      {title_svg}
       
       <!-- Channel name + Verified checkmark -->
-      <g transform="translate(0, 24)">
+      <g transform="translate(0, {channel_y})">
         <text x="0" y="0" class="yt-channel">{CHANNEL_NAME}</text>
         <g transform="translate(72, -13) scale(0.65)" fill="#AAAAAA">
           <path d="{check_path}"/>
@@ -181,7 +240,7 @@ def generate_card(video, index, b64_avatar):
       </g>
       
       <!-- Views & Date -->
-      <text x="0" y="44" class="yt-meta">{video["views"]}</text>
+      <text x="0" y="{meta_y}" class="yt-meta">{video["views"]}</text>
     </g>
 
     <!-- 3 Dots Menu Icon on Right -->
@@ -200,7 +259,7 @@ def generate_card(video, index, b64_avatar):
 
 def main():
     print("==================================================")
-    print("  GENERANDO TARJETAS EN assets/svg/")
+    print("  GENERANDO TARJETAS YOUTUBE CON SOPORTE 2 LÍNEAS")
     print("==================================================")
     b64_avatar = get_base64_avatar()
     for idx, video in enumerate(VIDEOS, start=1):

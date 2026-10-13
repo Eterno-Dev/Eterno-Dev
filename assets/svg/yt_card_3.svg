@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 440" width="580" height="440">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 445" width="580" height="445">
   <defs>
     <clipPath id="thumbClip_3">
       <rect x="0" y="0" width="580" height="326" rx="14"/>
@@ -13,7 +13,7 @@
   </defs>
 
   <!-- Dark Background (seamless with GitHub Dark mode) -->
-  <rect width="580" height="440" fill="#0F0F0F" rx="16"/>
+  <rect width="580" height="445" fill="#0F0F0F" rx="16"/>
 
   <!-- Thumbnail (16:9) with rounded corners -->
   <g clip-path="url(#thumbClip_3)">
@@ -39,11 +39,11 @@
 
     <!-- Details -->
     <g transform="translate(58, 14)">
-      <!-- Title -->
+      <!-- Title (1 or 2 lines) -->
       <text x="0" y="0" class="yt-title">Hice un VTUBER en 48 HORAS</text>
       
       <!-- Channel name + Verified checkmark -->
-      <g transform="translate(0, 24)">
+      <g transform="translate(0, 25)">
         <text x="0" y="0" class="yt-channel">EternoDev</text>
         <g transform="translate(72, -13) scale(0.65)" fill="#AAAAAA">
           <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/>
@@ -51,7 +51,7 @@
       </g>
       
       <!-- Views & Date -->
-      <text x="0" y="44" class="yt-meta">167 visualizaciones • 20 abr 2025</text>
+      <text x="0" y="46" class="yt-meta">167 visualizaciones • 20 abr 2025</text>
     </g>
 
     <!-- 3 Dots Menu Icon on Right -->
