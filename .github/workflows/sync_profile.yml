@@ -43,8 +43,9 @@ jobs:
           git add -A assets/ README.md
           if ! git diff --cached --quiet; then
             git commit -m "chore: auto-sync YouTube & Itch.io cards [skip ci]"
-            git pull --rebase origin main
-            git push origin main
+            for attempt in 1 2 3; do
+              git pull --rebase origin main && git push origin main && break || sleep 2
+            done
           else
             echo "No hay cambios nuevos para sincronizar."
           fi
