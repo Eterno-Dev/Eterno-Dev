@@ -331,35 +331,48 @@ def render_youtube_cards(videos):
 KNOWN_DESCRIPTIONS = {
     "castlecat-rpg": {
         "genre": "Adventure",
-        "desc_lines": ["¡Naciste gato, pero morirás como leyenda!"]
+        "desc_lines": ["¡Naciste gato, pero morirás como leyenda!"],
+        "browser": True,
+        "linux": True
     },
     "oonga-bunga": {
         "genre": "Fighting",
         "desc_lines": [
             "Compite con tus amigos para convertirte",
             "en el líder de la tribu. ¡Solo habrá un ganador!"
-        ]
+        ],
+        "win": True,
+        "linux": True
     },
     "soap-dodger": {
         "genre": "Action",
         "desc_lines": [
             "Agudiza tus reflejos en este peliagudo",
             "Bullet Hell. ¡No pierdas bocanadas de aire!"
-        ]
+        ],
+        "browser": True,
+        "win": True,
+        "linux": True,
+        "mac": True
     },
     "space-blitz": {
         "genre": "Shooter",
         "desc_lines": [
             "Combate espacial de ritmo rápido. Destruye",
             "enemigos y sobrevive a oleadas en el espacio."
-        ]
+        ],
+        "browser": True
     },
     "verdades-incompletas": {
         "genre": "Visual Novel",
         "desc_lines": [
             "Estás muerto... Descubre quién te asesinó",
             "mientras tus tres amigos investigan tu hogar."
-        ]
+        ],
+        "browser": True,
+        "win": True,
+        "linux": True,
+        "mac": True
     },
     "just-an-idiot-dev": {
         "genre": "Adventure",
@@ -371,6 +384,25 @@ KNOWN_DESCRIPTIONS = {
         "win": True
     }
 }
+
+def enrich_itch_game_page(url, cur):
+    if not url:
+        return cur
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            html = resp.read().decode('utf-8', errors='ignore')
+            if 'icon-windows8' in html or 'Download for Windows' in html or '.exe' in html:
+                cur['win'] = True
+            if 'icon-tux' in html or 'Download for Linux' in html or '.deb' in html or '.zip' in html or 'tar.gz' in html:
+                cur['linux'] = True
+            if 'icon-apple' in html or 'Download for macOS' in html or '.dmg' in html:
+                cur['mac'] = True
+            if 'web_flag' in html or 'Play in browser' in html or 'run_game' in html or 'html5' in html:
+                cur['browser'] = True
+    except Exception as e:
+        print(f"[!] Aviso consultando página de {url}: {e}")
+    return cur
 
 def wrap_itch_description(desc, max_chars=44, max_lines=2):
     if not desc:
@@ -522,17 +554,14 @@ def fetch_itch_games():
                     genre = g.get("genre") or meta.get("genre") or "Videojuego"
                     desc_lines = meta.get("desc_lines") or wrap_itch_description(g.get("short_text", ""))
                     
-                    # Plataformas en tiempo real según la API oficial de Itch.io
-                    has_browser = g.get("type") == "html" or bool(g.get("p_browser"))
-                    has_win = bool(g.get("p_windows"))
-                    has_lin = bool(g.get("p_linux"))
-                    has_mac = bool(g.get("p_osx"))
-
-                    if not (has_browser or has_win or has_lin or has_mac):
-                        has_browser = meta.get("browser", False)
-                        has_win = meta.get("win", False)
-                        has_lin = meta.get("linux", False)
-                        has_mac = meta.get("mac", False)
+                    # Plataformas con metadatos y enriquecimiento en vivo desde la página
+                    plat_dict = {
+                        "browser": g.get("type") == "html" or bool(g.get("p_browser")) or meta.get("browser", False),
+                        "win": bool(g.get("p_windows")) or meta.get("win", False),
+                        "linux": bool(g.get("p_linux")) or meta.get("linux", False),
+                        "mac": bool(g.get("p_osx")) or meta.get("mac", False)
+                    }
+                    plat_dict = enrich_itch_game_page(g.get("url"), plat_dict)
 
                     games.append({
                         "id": g.get("id"),
@@ -541,10 +570,10 @@ def fetch_itch_games():
                         "file": file_name,
                         "genre": genre,
                         "desc_lines": desc_lines,
-                        "browser": has_browser,
-                        "win": has_win,
-                        "linux": has_lin,
-                        "mac": has_mac
+                        "browser": plat_dict["browser"],
+                        "win": plat_dict["win"],
+                        "linux": plat_dict["linux"],
+                        "mac": plat_dict["mac"]
                     })
 
     # 2. Si no hay API Key, consultar fuente en vivo de EternoDev-Official
@@ -553,6 +582,9 @@ def fetch_itch_games():
         live_games = fetch_json("https://raw.githubusercontent.com/paucg06/EternoDev-Official/main/games.json")
         if live_games:
             for g in live_games:
+                is_pub = (g.get("published") is True) or (g.get("published") is not False and bool(g.get("published_at")) and not g.get("draft", False))
+                if not is_pub:
+                    continue
                 slug = (g.get("url") or "").rstrip("/").split("/")[-1]
                 file_name = f"{slug.replace('-', '_')}.png"
                 t_path = os.path.join(ITCH_THUMB_DIR, file_name)
@@ -563,16 +595,13 @@ def fetch_itch_games():
                 genre = g.get("genre") or meta.get("genre") or "Videojuego"
                 desc_lines = meta.get("desc_lines") or wrap_itch_description(g.get("short_text", ""))
 
-                has_browser = bool(g.get("p_browser")) or g.get("type") == "html"
-                has_win = bool(g.get("p_windows"))
-                has_lin = bool(g.get("p_linux"))
-                has_mac = bool(g.get("p_osx"))
-
-                if not (has_browser or has_win or has_lin or has_mac):
-                    has_browser = meta.get("browser", False)
-                    has_win = meta.get("win", False)
-                    has_lin = meta.get("linux", False)
-                    has_mac = meta.get("mac", False)
+                plat_dict = {
+                    "browser": bool(g.get("p_browser")) or g.get("type") == "html" or meta.get("browser", False),
+                    "win": bool(g.get("p_windows")) or meta.get("win", False),
+                    "linux": bool(g.get("p_linux")) or meta.get("linux", False),
+                    "mac": bool(g.get("p_osx")) or meta.get("mac", False)
+                }
+                plat_dict = enrich_itch_game_page(g.get("url"), plat_dict)
 
                 games.append({
                     "id": g.get("id"),
@@ -581,24 +610,10 @@ def fetch_itch_games():
                     "file": file_name,
                     "genre": genre,
                     "desc_lines": desc_lines,
-                    "browser": has_browser,
-                    "win": has_win,
-                    "linux": has_lin,
-                    "mac": has_mac
-                })
-
-            if not any("just-an-idiot-dev" in (g.get("url") or "") for g in games):
-                games.append({
-                    "id": "just-an-idiot-dev",
-                    "title": "Just An Idiot Dev",
-                    "url": "https://eternodev.itch.io/just-an-idiot-dev",
-                    "file": "just_an_idiot_dev.png",
-                    "genre": "Adventure",
-                    "desc_lines": KNOWN_DESCRIPTIONS["just-an-idiot-dev"]["desc_lines"],
-                    "browser": True,
-                    "win": True,
-                    "linux": False,
-                    "mac": False
+                    "browser": plat_dict["browser"],
+                    "win": plat_dict["win"],
+                    "linux": plat_dict["linux"],
+                    "mac": plat_dict["mac"]
                 })
 
     for idx, game in enumerate(games, start=1):

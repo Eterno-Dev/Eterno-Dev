@@ -30,14 +30,16 @@
   <p align="center">
     <a href="https://eternodev.itch.io/castlecat-rpg" target="_blank"><img src="./assets/svg/itch_card_1.svg" width="32%" alt="CastleCat RPG"></a>
     &nbsp;
-    <a href="https://eternodev.itch.io/oonga-bunga" target="_blank"><img src="./assets/svg/itch_card_2.svg" width="32%" alt="Oonga Bunga!"></a>
+    <a href="https://eternodev.itch.io/just-an-idiot-dev" target="_blank"><img src="./assets/svg/itch_card_2.svg" width="32%" alt="Just An Idiot Dev"></a>
     &nbsp;
-    <a href="https://eternodev.itch.io/soap-dodger" target="_blank"><img src="./assets/svg/itch_card_3.svg" width="32%" alt="Soap Dodger"></a>
+    <a href="https://eternodev.itch.io/oonga-bunga" target="_blank"><img src="./assets/svg/itch_card_3.svg" width="32%" alt="Oonga Bunga!"></a>
   </p>
   <p align="center">
-    <a href="https://eternodev.itch.io/space-blitz" target="_blank"><img src="./assets/svg/itch_card_4.svg" width="32%" alt="Space Blitz"></a>
+    <a href="https://eternodev.itch.io/soap-dodger" target="_blank"><img src="./assets/svg/itch_card_4.svg" width="32%" alt="Soap Dodger"></a>
     &nbsp;
-    <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank"><img src="./assets/svg/itch_card_5.svg" width="32%" alt="Verdades Incompletas"></a>
+    <a href="https://eternodev.itch.io/space-blitz" target="_blank"><img src="./assets/svg/itch_card_5.svg" width="32%" alt="Space Blitz"></a>
+    &nbsp;
+    <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank"><img src="./assets/svg/itch_card_6.svg" width="32%" alt="Verdades Incompletas"></a>
   </p>
 
 </div>
