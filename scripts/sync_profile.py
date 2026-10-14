@@ -396,24 +396,77 @@ KNOWN_DESCRIPTIONS = {
     }
 }
 
-def enrich_itch_game_page(url, cur):
+def check_and_enrich_game(game):
+    url = game.get("url")
     if not url:
-        return cur
+        return None
+
+    slug = url.rstrip("/").split("/")[-1]
+    meta = KNOWN_DESCRIPTIONS.get(slug, {})
+
+    plat_dict = {
+        "browser": game.get("type") == "html" or bool(game.get("p_browser")) or meta.get("browser", False),
+        "win": bool(game.get("p_windows")) or meta.get("win", False),
+        "linux": bool(game.get("p_linux")) or meta.get("linux", False),
+        "mac": bool(game.get("p_osx")) or meta.get("mac", False)
+    }
+
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status not in (200, 301, 302):
+                print(f"[-] Juego descartado por estado HTTP {resp.status}: {game.get('title')}")
+                return None
+            
             html = resp.read().decode('utf-8', errors='ignore')
+            
+            # Comprobar indicadores de privacidad, borrador o acceso restringido
+            private_indicators = [
+                'This game is unavailable',
+                'This game is a draft',
+                'Access restricted',
+                'password_form',
+                'this game has been deleted'
+            ]
+            if any(ind in html for ind in private_indicators):
+                print(f"[-] Juego descartado por ser privado/borrador: {game.get('title')}")
+                return None
+
+            # Detección de plataformas en tiempo real desde la web oficial
             if 'icon-windows8' in html or 'Download for Windows' in html or '.exe' in html:
-                cur['win'] = True
+                plat_dict['win'] = True
             if 'icon-tux' in html or 'Download for Linux' in html or '.deb' in html or '.zip' in html or 'tar.gz' in html:
-                cur['linux'] = True
+                plat_dict['linux'] = True
             if 'icon-apple' in html or 'Download for macOS' in html or '.dmg' in html:
-                cur['mac'] = True
+                plat_dict['mac'] = True
             if 'web_flag' in html or 'Play in browser' in html or 'run_game' in html or 'html5' in html:
-                cur['browser'] = True
+                plat_dict['browser'] = True
+
+    except urllib.error.HTTPError as e:
+        # HTTP 404 o 403 indica que el juego está oculto, borrado o en borrador privado
+        if e.code in (404, 403, 410):
+            print(f"[-] Juego no accesible públicamente (HTTP {e.code}): {game.get('title')} ({url})")
+            return None
+        print(f"[!] Aviso HTTP {e.code} consultando {url}, manteniendo fallback")
     except Exception as e:
-        print(f"[!] Aviso consultando página de {url}: {e}")
-    return cur
+        print(f"[!] Error de red consultando {url}: {e}")
+
+    genre = game.get("genre") or meta.get("genre") or "Videojuego"
+    desc_lines = meta.get("desc_lines") or wrap_itch_description(game.get("short_text", ""))
+
+    return {
+        "id": game.get("id"),
+        "title": game.get("title"),
+        "url": url,
+        "file": f"{slug.replace('-', '_')}.png",
+        "genre": genre,
+        "desc_lines": desc_lines,
+        "browser": plat_dict["browser"],
+        "win": plat_dict["win"],
+        "linux": plat_dict["linux"],
+        "mac": plat_dict["mac"],
+        "cover_url": game.get("cover_url")
+    }
 
 def wrap_itch_description(desc, max_chars=44, max_lines=2):
     if not desc:
@@ -544,6 +597,7 @@ def generate_itch_card(game, index):
 def fetch_itch_games():
     api_key = os.environ.get("ITCH_API_KEY")
     games = []
+    seen_urls = set()
     
     # 1. Si la API Key de Itch.io está configurada, consultar oficial
     if api_key:
@@ -551,41 +605,21 @@ def fetch_itch_games():
         data = fetch_json("https://api.itch.io/profile/games", headers={'Authorization': f'Bearer {api_key}'})
         if data and "games" in data:
             for g in data["games"]:
-                # Comprobar que esté realmente publicado y no sea borrador ni privado
-                is_published = (g.get("published") is True) or (g.get("published") is not False and bool(g.get("published_at")) and not g.get("draft", False))
-                if is_published:
-                    slug = (g.get("url") or "").rstrip("/").split("/")[-1]
-                    file_name = f"{slug.replace('-', '_')}.png"
-                    t_path = os.path.join(ITCH_THUMB_DIR, file_name)
-                    # Descargar o actualizar carátula
-                    if g.get("cover_url"):
-                        download_file(g["cover_url"], t_path)
-                        
-                    meta = KNOWN_DESCRIPTIONS.get(slug, {})
-                    genre = g.get("genre") or meta.get("genre") or "Videojuego"
-                    desc_lines = meta.get("desc_lines") or wrap_itch_description(g.get("short_text", ""))
-                    
-                    # Plataformas con metadatos y enriquecimiento en vivo desde la página
-                    plat_dict = {
-                        "browser": g.get("type") == "html" or bool(g.get("p_browser")) or meta.get("browser", False),
-                        "win": bool(g.get("p_windows")) or meta.get("win", False),
-                        "linux": bool(g.get("p_linux")) or meta.get("linux", False),
-                        "mac": bool(g.get("p_osx")) or meta.get("mac", False)
-                    }
-                    plat_dict = enrich_itch_game_page(g.get("url"), plat_dict)
-
-                    games.append({
-                        "id": g.get("id"),
-                        "title": g.get("title"),
-                        "url": g.get("url"),
-                        "file": file_name,
-                        "genre": genre,
-                        "desc_lines": desc_lines,
-                        "browser": plat_dict["browser"],
-                        "win": plat_dict["win"],
-                        "linux": plat_dict["linux"],
-                        "mac": plat_dict["mac"]
-                    })
+                if g.get("published") is False:
+                    continue
+                enriched = check_and_enrich_game(g)
+                if not enriched:
+                    continue
+                url = enriched["url"]
+                if url in seen_urls:
+                    continue
+                seen_urls.add(url)
+                
+                # Descargar o actualizar carátula
+                if enriched.get("cover_url"):
+                    t_path = os.path.join(ITCH_THUMB_DIR, enriched["file"])
+                    download_file(enriched["cover_url"], t_path)
+                games.append(enriched)
 
     # 2. Si no hay API Key, consultar fuente en vivo de EternoDev-Official
     if not games:
@@ -593,39 +627,20 @@ def fetch_itch_games():
         live_games = fetch_json("https://raw.githubusercontent.com/paucg06/EternoDev-Official/main/games.json")
         if live_games:
             for g in live_games:
-                is_pub = (g.get("published") is True) or (g.get("published") is not False and bool(g.get("published_at")) and not g.get("draft", False))
-                if not is_pub:
+                if g.get("published") is False:
                     continue
-                slug = (g.get("url") or "").rstrip("/").split("/")[-1]
-                file_name = f"{slug.replace('-', '_')}.png"
-                t_path = os.path.join(ITCH_THUMB_DIR, file_name)
-                if g.get("cover_url"):
-                    download_file(g["cover_url"], t_path)
-                    
-                meta = KNOWN_DESCRIPTIONS.get(slug, {})
-                genre = g.get("genre") or meta.get("genre") or "Videojuego"
-                desc_lines = meta.get("desc_lines") or wrap_itch_description(g.get("short_text", ""))
+                enriched = check_and_enrich_game(g)
+                if not enriched:
+                    continue
+                url = enriched["url"]
+                if url in seen_urls:
+                    continue
+                seen_urls.add(url)
 
-                plat_dict = {
-                    "browser": bool(g.get("p_browser")) or g.get("type") == "html" or meta.get("browser", False),
-                    "win": bool(g.get("p_windows")) or meta.get("win", False),
-                    "linux": bool(g.get("p_linux")) or meta.get("linux", False),
-                    "mac": bool(g.get("p_osx")) or meta.get("mac", False)
-                }
-                plat_dict = enrich_itch_game_page(g.get("url"), plat_dict)
-
-                games.append({
-                    "id": g.get("id"),
-                    "title": g.get("title"),
-                    "url": g.get("url"),
-                    "file": file_name,
-                    "genre": genre,
-                    "desc_lines": desc_lines,
-                    "browser": plat_dict["browser"],
-                    "win": plat_dict["win"],
-                    "linux": plat_dict["linux"],
-                    "mac": plat_dict["mac"]
-                })
+                if enriched.get("cover_url"):
+                    t_path = os.path.join(ITCH_THUMB_DIR, enriched["file"])
+                    download_file(enriched["cover_url"], t_path)
+                games.append(enriched)
 
     for idx, game in enumerate(games, start=1):
         svg_code = generate_itch_card(game, idx)
