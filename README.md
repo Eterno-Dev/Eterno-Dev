@@ -21,7 +21,6 @@
   </p>
 
   <br>
-  <hr>
   <br>
 
   <!-- SECCIÓN JUEGOS EN ITCH.IO -->
