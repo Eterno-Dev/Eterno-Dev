@@ -559,7 +559,6 @@ def build_readme(yt_videos, itch_games):
 {yt_html}
 
   <br>
-  <hr>
   <br>
 
   <!-- SECCIÓN JUEGOS EN ITCH.IO -->
