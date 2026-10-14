@@ -139,6 +139,8 @@ def fetch_youtube_videos():
     channel_id = "UCewJv1M1YAKfLcbld6iWxWg"
     videos = []
 
+    seen_ids = set()
+
     # 1. Si la API Key está configurada, consultar YouTube Data API v3
     if api_key:
         print("[+] Conectando a YouTube Data API v3 oficial...")
@@ -152,13 +154,18 @@ def fetch_youtube_videos():
                     stats_data = fetch_json(f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails,status&id={','.join(vids_ids)}&key={api_key}")
                     if stats_data and "items" in stats_data:
                         for item in stats_data["items"]:
+                            v_id = item["id"]
+                            if v_id in seen_ids:
+                                continue
+                            seen_ids.add(v_id)
+
                             # Omitir vídeos privados o borrados
                             if item.get("status", {}).get("privacyStatus") == "private":
                                 continue
                             s = item.get("snippet", {})
                             if s.get("title") in ("Private video", "Deleted video"):
                                 continue
-                            v_id = item["id"]
+                            
                             canon = CANONICAL_YT_DATA.get(v_id, {})
                             title = s.get("title") or canon.get("title", "")
                             dur = parse_iso_duration(item.get("contentDetails", {}).get("duration")) or canon.get("duration", "10:00")
@@ -188,6 +195,10 @@ def fetch_youtube_videos():
         if live_vids:
             for v in live_vids:
                 v_id = v["id"]
+                if v_id in seen_ids:
+                    continue
+                seen_ids.add(v_id)
+
                 canon = CANONICAL_YT_DATA.get(v_id, {})
                 title = canon.get("title") or v.get("title", "")
                 dur = canon.get("duration") or "10:00"
