@@ -149,24 +149,29 @@ def fetch_youtube_videos():
             if items_data and "items" in items_data:
                 vids_ids = [i["snippet"]["resourceId"]["videoId"] for i in items_data["items"] if "snippet" in i]
                 if vids_ids:
-                    stats_data = fetch_json(f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id={','.join(vids_ids)}&key={api_key}")
+                    stats_data = fetch_json(f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails,status&id={','.join(vids_ids)}&key={api_key}")
                     if stats_data and "items" in stats_data:
                         for item in stats_data["items"]:
+                            # Omitir vídeos privados o borrados
+                            if item.get("status", {}).get("privacyStatus") == "private":
+                                continue
+                            s = item.get("snippet", {})
+                            if s.get("title") in ("Private video", "Deleted video"):
+                                continue
                             v_id = item["id"]
-                            s = item["snippet"]
                             canon = CANONICAL_YT_DATA.get(v_id, {})
-                            title = canon.get("title") or s.get("title", "")
-                            dur = canon.get("duration") or parse_iso_duration(item.get("contentDetails", {}).get("duration"))
+                            title = s.get("title") or canon.get("title", "")
+                            dur = parse_iso_duration(item.get("contentDetails", {}).get("duration")) or canon.get("duration", "10:00")
                             views_raw = item.get("statistics", {}).get("viewCount", "0")
                             views_str = f"{format_count(views_raw)} visualizaciones"
-                            date_str = canon.get("date") or format_relative_date(s.get("publishedAt"))
+                            date_str = format_relative_date(s.get("publishedAt")) or canon.get("date", "")
                             meta_str = f"{views_str} • {date_str}" if date_str else views_str
                             
-                            cover_url = s.get("thumbnails", {}).get("maxres", {}).get("url") or f"https://i.ytimg.com/vi/{v_id}/hqdefault.jpg"
+                            cover_url = s.get("thumbnails", {}).get("maxres", {}).get("url") or s.get("thumbnails", {}).get("high", {}).get("url") or f"https://i.ytimg.com/vi/{v_id}/hqdefault.jpg"
                             t_file = f"thumb_{v_id}.jpg"
                             t_path = os.path.join(THUMB_DIR, t_file)
-                            if not os.path.exists(t_path):
-                                download_file(cover_url, t_path)
+                            # Descargar o actualizar la miniatura
+                            download_file(cover_url, t_path)
 
                             videos.append({
                                 "id": v_id,
@@ -367,6 +372,35 @@ KNOWN_DESCRIPTIONS = {
     }
 }
 
+def wrap_itch_description(desc, max_chars=44, max_lines=2):
+    if not desc:
+        return []
+    words = desc.split()
+    lines = []
+    curr = []
+    curr_len = 0
+    for w in words:
+        needed = len(w) + (1 if curr else 0)
+        if curr_len + needed <= max_chars:
+            curr.append(w)
+            curr_len += needed
+        else:
+            if len(lines) < max_lines - 1:
+                lines.append(" ".join(curr))
+                curr = [w]
+                curr_len = len(w)
+            else:
+                curr.append(w)
+                line_str = " ".join(curr)
+                if len(line_str) > max_chars:
+                    line_str = line_str[:max_chars - 3].rstrip() + "..."
+                lines.append(line_str)
+                curr = []
+                break
+    if curr and len(lines) < max_lines:
+        lines.append(" ".join(curr))
+    return lines
+
 def render_platform_bar(has_browser, has_win, has_lin, has_mac):
     elements = []
     x_cur = 0
@@ -480,13 +514,26 @@ def fetch_itch_games():
                     slug = (g.get("url") or "").rstrip("/").split("/")[-1]
                     file_name = f"{slug.replace('-', '_')}.png"
                     t_path = os.path.join(ITCH_THUMB_DIR, file_name)
-                    if not os.path.exists(t_path) and g.get("cover_url"):
+                    # Descargar o actualizar carátula
+                    if g.get("cover_url"):
                         download_file(g["cover_url"], t_path)
                         
                     meta = KNOWN_DESCRIPTIONS.get(slug, {})
-                    genre = meta.get("genre") or "Videojuego"
-                    desc_lines = meta.get("desc_lines") or [g.get("short_text", "")[:45]]
+                    genre = g.get("genre") or meta.get("genre") or "Videojuego"
+                    desc_lines = meta.get("desc_lines") or wrap_itch_description(g.get("short_text", ""))
                     
+                    # Plataformas en tiempo real según la API oficial de Itch.io
+                    has_browser = g.get("type") == "html" or bool(g.get("p_browser"))
+                    has_win = bool(g.get("p_windows"))
+                    has_lin = bool(g.get("p_linux"))
+                    has_mac = bool(g.get("p_osx"))
+
+                    if not (has_browser or has_win or has_lin or has_mac):
+                        has_browser = meta.get("browser", False)
+                        has_win = meta.get("win", False)
+                        has_lin = meta.get("linux", False)
+                        has_mac = meta.get("mac", False)
+
                     games.append({
                         "id": g.get("id"),
                         "title": g.get("title"),
@@ -494,10 +541,10 @@ def fetch_itch_games():
                         "file": file_name,
                         "genre": genre,
                         "desc_lines": desc_lines,
-                        "browser": g.get("type") == "html" or meta.get("browser", False),
-                        "win": bool(g.get("p_windows")) or meta.get("win", False),
-                        "linux": bool(g.get("p_linux")) or meta.get("linux", False),
-                        "mac": bool(g.get("p_osx")) or meta.get("mac", False)
+                        "browser": has_browser,
+                        "win": has_win,
+                        "linux": has_lin,
+                        "mac": has_mac
                     })
 
     # 2. Si no hay API Key, consultar fuente en vivo de EternoDev-Official
@@ -509,12 +556,23 @@ def fetch_itch_games():
                 slug = (g.get("url") or "").rstrip("/").split("/")[-1]
                 file_name = f"{slug.replace('-', '_')}.png"
                 t_path = os.path.join(ITCH_THUMB_DIR, file_name)
-                if not os.path.exists(t_path) and g.get("cover_url"):
+                if g.get("cover_url"):
                     download_file(g["cover_url"], t_path)
                     
                 meta = KNOWN_DESCRIPTIONS.get(slug, {})
                 genre = g.get("genre") or meta.get("genre") or "Videojuego"
-                desc_lines = meta.get("desc_lines") or [g.get("short_text", "")[:45]]
+                desc_lines = meta.get("desc_lines") or wrap_itch_description(g.get("short_text", ""))
+
+                has_browser = bool(g.get("p_browser")) or g.get("type") == "html"
+                has_win = bool(g.get("p_windows"))
+                has_lin = bool(g.get("p_linux"))
+                has_mac = bool(g.get("p_osx"))
+
+                if not (has_browser or has_win or has_lin or has_mac):
+                    has_browser = meta.get("browser", False)
+                    has_win = meta.get("win", False)
+                    has_lin = meta.get("linux", False)
+                    has_mac = meta.get("mac", False)
 
                 games.append({
                     "id": g.get("id"),
@@ -523,10 +581,10 @@ def fetch_itch_games():
                     "file": file_name,
                     "genre": genre,
                     "desc_lines": desc_lines,
-                    "browser": bool(g.get("p_browser")) or g.get("type") == "html" or meta.get("browser", False),
-                    "win": bool(g.get("p_windows")) or meta.get("win", False),
-                    "linux": bool(g.get("p_linux")) or meta.get("linux", False),
-                    "mac": bool(g.get("p_osx")) or meta.get("mac", False)
+                    "browser": has_browser,
+                    "win": has_win,
+                    "linux": has_lin,
+                    "mac": has_mac
                 })
 
             if not any("just-an-idiot-dev" in (g.get("url") or "") for g in games):
@@ -567,30 +625,48 @@ def fetch_itch_games():
 # 3. CONSTRUCCIÓN AUTOMÁTICA DEL README.MD
 # =============================================================================
 def build_readme(yt_videos, itch_games):
+    sections = []
+
     # Generar HTML para filas de YouTube (2 por fila, dinámico para cualquier cantidad)
-    yt_rows = []
-    for i in range(0, len(yt_videos), 2):
-        v1 = yt_videos[i]
-        card1 = f'<a href="https://www.youtube.com/watch?v={v1["id"]}" target="_blank"><img src="./assets/svg/yt_card_{i+1}.svg" width="48.5%" alt="{v1["title"]}"></a>'
-        if i + 1 < len(yt_videos):
-            v2 = yt_videos[i+1]
-            card2 = f'<a href="https://www.youtube.com/watch?v={v2["id"]}" target="_blank"><img src="./assets/svg/yt_card_{i+2}.svg" width="48.5%" alt="{v2["title"]}"></a>'
-            yt_rows.append(f'  <p align="center">\n    {card1}\n    &nbsp;\n    {card2}\n  </p>')
-        else:
-            yt_rows.append(f'  <p align="center">\n    {card1}\n  </p>')
-    yt_html = "\n".join(yt_rows)
+    if yt_videos:
+        yt_rows = []
+        for i in range(0, len(yt_videos), 2):
+            v1 = yt_videos[i]
+            card1 = f'<a href="https://www.youtube.com/watch?v={v1["id"]}" target="_blank"><img src="./assets/svg/yt_card_{i+1}.svg" width="48.5%" alt="{v1["title"]}"></a>'
+            if i + 1 < len(yt_videos):
+                v2 = yt_videos[i+1]
+                card2 = f'<a href="https://www.youtube.com/watch?v={v2["id"]}" target="_blank"><img src="./assets/svg/yt_card_{i+2}.svg" width="48.5%" alt="{v2["title"]}"></a>'
+                yt_rows.append(f'  <p align="center">\n    {card1}\n    &nbsp;\n    {card2}\n  </p>')
+            else:
+                yt_rows.append(f'  <p align="center">\n    {card1}\n  </p>')
+        yt_html = "\n".join(yt_rows)
+        sections.append(f'''  <!-- SECCIÓN VÍDEOS DE YOUTUBE -->
+  <h1>Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./assets/svg/yt_badge.svg" height="40" alt="YouTube" valign="middle"></a></h1>
+
+  <!-- FEED YOUTUBE (CUADRÍCULA SIN BORDES) -->
+{yt_html}''')
 
     # Generar HTML para filas de Itch.io (3 por fila, sólo los juegos existentes)
-    itch_rows = []
-    for i in range(0, len(itch_games), 3):
-        chunk = itch_games[i:i+3]
-        links = []
-        for j, g in enumerate(chunk):
-            idx = i + j + 1
-            links.append(f'<a href="{g["url"]}" target="_blank"><img src="./assets/svg/itch_card_{idx}.svg" width="32%" alt="{g["title"]}"></a>')
-        row_str = "\n    &nbsp;\n    ".join(links)
-        itch_rows.append(f'  <p align="center">\n    {row_str}\n  </p>')
-    itch_html = "\n".join(itch_rows)
+    if itch_games:
+        itch_rows = []
+        for i in range(0, len(itch_games), 3):
+            chunk = itch_games[i:i+3]
+            links = []
+            for j, g in enumerate(chunk):
+                idx = i + j + 1
+                links.append(f'<a href="{g["url"]}" target="_blank"><img src="./assets/svg/itch_card_{idx}.svg" width="32%" alt="{g["title"]}"></a>')
+            row_str = "\n    &nbsp;\n    ".join(links)
+            itch_rows.append(f'  <p align="center">\n    {row_str}\n  </p>')
+        itch_html = "\n".join(itch_rows)
+        sections.append(f'''  <!-- SECCIÓN JUEGOS EN ITCH.IO -->
+  <h1>Juegos en <a href="https://eternodev.itch.io" target="_blank"><img src="./assets/svg/itch_badge.svg" height="40" alt="Itch.io" valign="middle"></a></h1>
+
+  <!-- FEED ITCH.IO (SOLO JUEGOS PUBLICADOS) -->
+{itch_html}''')
+
+    body_content = "\n\n  <br>\n  <br>\n\n".join(sections)
+    if body_content:
+        body_content = "\n" + body_content + "\n"
 
     readme_content = f'''<div align="center">
 
@@ -598,22 +674,7 @@ def build_readme(yt_videos, itch_games):
   <a href="https://eternodev.com" target="_blank">
     <img src="./assets/svg/header.svg" width="100%" alt="EternoDev - Open Web">
   </a>
-
-  <!-- SECCIÓN VÍDEOS DE YOUTUBE -->
-  <h1>Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./assets/svg/yt_badge.svg" height="40" alt="YouTube" valign="middle"></a></h1>
-
-  <!-- FEED YOUTUBE 2x2 (CUADRÍCULA SIN BORDES) -->
-{yt_html}
-
-  <br>
-  <br>
-
-  <!-- SECCIÓN JUEGOS EN ITCH.IO -->
-  <h1>Juegos en <a href="https://eternodev.itch.io" target="_blank"><img src="./assets/svg/itch_badge.svg" height="40" alt="Itch.io" valign="middle"></a></h1>
-
-  <!-- FEED ITCH.IO (SOLO JUEGOS PUBLICADOS) -->
-{itch_html}
-
+{body_content}
 </div>
 '''
     with open(README_PATH, "w", encoding="utf-8") as f:
