@@ -10,57 +10,35 @@
 
   <!-- FEED YOUTUBE 2x2 (CUADRÍCULA SIN BORDES) -->
   <p align="center">
-    <a href="https://www.youtube.com/watch?v=wjoGjOxCTCQ" target="_blank">
-      <img src="./assets/svg/yt_card_1.svg" width="48.5%" alt="¡REHICE el Juego de mis SUEÑOS! - DevBlog 2">
-    </a>
+    <a href="https://www.youtube.com/watch?v=wjoGjOxCTCQ" target="_blank"><img src="./assets/svg/yt_card_1.svg" width="48.5%" alt="¡REHICE el Juego de mis SUEÑOS! - DevBlog 2"></a>
     &nbsp;
-    <a href="https://www.youtube.com/watch?v=DFR5UtAuHTw" target="_blank">
-      <img src="./assets/svg/yt_card_2.svg" width="48.5%" alt="Sobreviví a mi PRIMERA GameJam">
-    </a>
+    <a href="https://www.youtube.com/watch?v=DFR5UtAuHTw" target="_blank"><img src="./assets/svg/yt_card_2.svg" width="48.5%" alt="Sobreviví a mi PRIMERA GameJam"></a>
   </p>
   <p align="center">
-    <a href="https://www.youtube.com/watch?v=bRbhRWQvqs8" target="_blank">
-      <img src="./assets/svg/yt_card_3.svg" width="48.5%" alt="Hice un VTUBER en 48 HORAS">
-    </a>
+    <a href="https://www.youtube.com/watch?v=bRbhRWQvqs8" target="_blank"><img src="./assets/svg/yt_card_3.svg" width="48.5%" alt="Hice un VTUBER en 48 HORAS"></a>
     &nbsp;
-    <a href="https://www.youtube.com/watch?v=F1-R5hIjGLM" target="_blank">
-      <img src="./assets/svg/yt_card_4.svg" width="48.5%" alt="¡Creando Mi Propio ROGUELIKE Desde CERO!- DevBlog 1">
-    </a>
+    <a href="https://www.youtube.com/watch?v=F1-R5hIjGLM" target="_blank"><img src="./assets/svg/yt_card_4.svg" width="48.5%" alt="¡Creando Mi Propio ROGUELIKE Desde CERO!- DevBlog 1"></a>
   </p>
 
-  <!-- SECCIÓN VIDEOJUEGOS EN ITCH.IO -->
-  <p align="center">
-    <a href="https://eternodev.itch.io" target="_blank">
-      <img src="./assets/svg/itch_badge.svg" height="40" alt="Juegos en Itch.io" valign="middle">
-    </a>
-  </p>
+  <br>
+  <hr>
+  <br>
 
-  <!-- FEED ITCH.IO 3x2 (CUADRÍCULA DE 3 COLUMNAS: 5 JUEGOS + 1 CATÁLOGO) -->
+  <!-- SECCIÓN JUEGOS EN ITCH.IO -->
+  <h1>Juegos en <a href="https://eternodev.itch.io" target="_blank"><img src="./assets/svg/itch_badge.svg" height="40" alt="Itch.io" valign="middle"></a></h1>
+
+  <!-- FEED ITCH.IO (SOLO JUEGOS PUBLICADOS) -->
   <p align="center">
-    <a href="https://eternodev.itch.io/castlecat-rpg" target="_blank">
-      <img src="./assets/svg/itch_card_1.svg" width="32%" alt="CastleCat RPG">
-    </a>
+    <a href="https://eternodev.itch.io/castlecat-rpg" target="_blank"><img src="./assets/svg/itch_card_1.svg" width="32%" alt="CastleCat RPG"></a>
     &nbsp;
-    <a href="https://eternodev.itch.io/oonga-bunga" target="_blank">
-      <img src="./assets/svg/itch_card_2.svg" width="32%" alt="Oonga Bunga!">
-    </a>
+    <a href="https://eternodev.itch.io/oonga-bunga" target="_blank"><img src="./assets/svg/itch_card_2.svg" width="32%" alt="Oonga Bunga!"></a>
     &nbsp;
-    <a href="https://eternodev.itch.io/soap-dodger" target="_blank">
-      <img src="./assets/svg/itch_card_3.svg" width="32%" alt="Soap Dodger">
-    </a>
+    <a href="https://eternodev.itch.io/soap-dodger" target="_blank"><img src="./assets/svg/itch_card_3.svg" width="32%" alt="Soap Dodger"></a>
   </p>
   <p align="center">
-    <a href="https://eternodev.itch.io/space-blitz" target="_blank">
-      <img src="./assets/svg/itch_card_4.svg" width="32%" alt="Space Blitz">
-    </a>
+    <a href="https://eternodev.itch.io/space-blitz" target="_blank"><img src="./assets/svg/itch_card_4.svg" width="32%" alt="Space Blitz"></a>
     &nbsp;
-    <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank">
-      <img src="./assets/svg/itch_card_5.svg" width="32%" alt="Verdades Incompletas">
-    </a>
-    &nbsp;
-    <a href="https://eternodev.itch.io" target="_blank">
-      <img src="./assets/svg/itch_card_6.svg" width="32%" alt="Catálogo completo de EternoDev en Itch.io">
-    </a>
+    <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank"><img src="./assets/svg/itch_card_5.svg" width="32%" alt="Verdades Incompletas"></a>
   </p>
 
 </div>

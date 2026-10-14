@@ -2,8 +2,8 @@ name: Auto-Sync YouTube & Itch.io Profile
 
 on:
   schedule:
-    # Se ejecuta cada 4 horas automáticamente
-    - cron: '0 */4 * * *'
+    # Se ejecuta cada 2 horas automáticamente
+    - cron: '0 */2 * * *'
   # Permite ejecutarlo manualmente en cualquier momento desde la pestaña Actions con un clic
   workflow_dispatch:
 
