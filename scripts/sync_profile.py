@@ -221,12 +221,33 @@ def fetch_youtube_videos():
 
     return videos
 
+def get_optimized_b64(img_path, target_size, quality=82, is_png=False):
+    """Carga y optimiza una imagen a target_size para mantener los SVGs ultraligeros y evitar timeouts en GitHub Camo."""
+    if not os.path.exists(img_path):
+        return ""
+    try:
+        from PIL import Image
+        import io
+        with Image.open(img_path) as img:
+            img = img.convert("RGBA" if is_png else "RGB")
+            img = img.resize(target_size, Image.Resampling.LANCZOS)
+            buf = io.BytesIO()
+            if is_png:
+                img.save(buf, format="PNG", optimize=True)
+            else:
+                img.save(buf, format="JPEG", quality=quality, optimize=True)
+            return base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception as e:
+        print(f"[!] Aviso optimizando {img_path}: {e}")
+        try:
+            with open(img_path, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+        except:
+            return ""
+
 def render_youtube_cards(videos):
     logo_path = os.path.join(THUMB_DIR, "logo.png")
-    b64_avatar = ""
-    if os.path.exists(logo_path):
-        with open(logo_path, "rb") as f:
-            b64_avatar = base64.b64encode(f.read()).decode("utf-8")
+    b64_avatar = get_optimized_b64(logo_path, (84, 84), is_png=True)
 
     w, h = 580, 445
     check_path = "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"
@@ -236,10 +257,8 @@ def render_youtube_cards(videos):
         if not os.path.exists(thumb_path):
             thumb_path = os.path.join(THUMB_DIR, "thumb_rehice.png")
 
-        with open(thumb_path, "rb") as f:
-            b64_thumb = base64.b64encode(f.read()).decode("utf-8")
-
-        mime = "png" if thumb_path.endswith(".png") else "jpeg"
+        b64_thumb = get_optimized_b64(thumb_path, (w, 326), quality=82, is_png=False)
+        mime = "jpeg"
         line1, line2 = wrap_youtube_title(video["title"], max_chars=35)
         if line2:
             title_svg = f'''<text x="0" y="0" class="yt-title">{line1}</text>
@@ -535,8 +554,7 @@ def generate_itch_card(game, index):
     cover_h = 302 # Exact 315x250 aspect ratio
     
     thumb_path = os.path.join(ITCH_THUMB_DIR, game["file"])
-    with open(thumb_path, "rb") as f:
-        b64_img = base64.b64encode(f.read()).decode("utf-8")
+    b64_img = get_optimized_b64(thumb_path, (w, cover_h), quality=82, is_png=False)
         
     platforms_svg = render_platform_bar(game.get("browser", False), game.get("win", False), game.get("linux", False), game.get("mac", False))
     
@@ -577,7 +595,7 @@ def generate_itch_card(game, index):
   <rect width="{w}" height="{h}" fill="#0F0F0F" rx="4"/>
 
   <g clip-path="url(#itchClip_{index})">
-    <image href="data:image/png;base64,{b64_img}" 
+    <image href="data:image/jpeg;base64,{b64_img}" 
            x="0" y="0" width="{w}" height="{cover_h}" 
            preserveAspectRatio="none"/>
   </g>

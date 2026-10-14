@@ -6,7 +6,7 @@
   </a>
 
   <!-- SECCIÓN VÍDEOS DE YOUTUBE -->
-  <h1 id="videos-de-youtube">Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./assets/svg/yt_badge.svg" height="40" alt="YouTube" valign="middle"></a></h1>
+  <h1>Vídeos de <a href="https://www.youtube.com/@eternodev" target="_blank"><img src="./assets/svg/yt_badge.svg" height="40" alt="YouTube" valign="middle"></a></h1>
 
   <!-- FEED YOUTUBE (CUADRÍCULA SIN BORDES) -->
   <p align="center">
@@ -24,7 +24,7 @@
   <br>
 
   <!-- SECCIÓN JUEGOS EN ITCH.IO -->
-  <h1 id="juegos-de-itch.io">Juegos en <a href="https://eternodev.itch.io" target="_blank"><img src="./assets/svg/itch_badge.svg" height="40" alt="Itch.io" valign="middle"></a></h1>
+  <h1>Juegos en <a href="https://eternodev.itch.io" target="_blank"><img src="./assets/svg/itch_badge.svg" height="40" alt="Itch.io" valign="middle"></a></h1>
 
   <!-- FEED ITCH.IO (SOLO JUEGOS PUBLICADOS) -->
   <p align="center">
