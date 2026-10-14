@@ -344,6 +344,15 @@ KNOWN_DESCRIPTIONS = {
             "Estás muerto... Descubre quién te asesinó",
             "mientras tus tres amigos investigan tu hogar."
         ]
+    },
+    "just-an-idiot-dev": {
+        "genre": "Adventure",
+        "desc_lines": [
+            "¿Qué? ¿Han robado mi juego? Toma el control",
+            "del desarrollador y recupera tu creación."
+        ],
+        "browser": True,
+        "win": True
     }
 }
 
@@ -472,10 +481,10 @@ def fetch_itch_games():
                         "file": file_name,
                         "genre": genre,
                         "desc_lines": desc_lines,
-                        "browser": g.get("type") == "html",
-                        "win": bool(g.get("p_windows")),
-                        "linux": bool(g.get("p_linux")),
-                        "mac": bool(g.get("p_osx"))
+                        "browser": g.get("type") == "html" or meta.get("browser", False),
+                        "win": bool(g.get("p_windows")) or meta.get("win", False),
+                        "linux": bool(g.get("p_linux")) or meta.get("linux", False),
+                        "mac": bool(g.get("p_osx")) or meta.get("mac", False)
                     })
 
     # 2. Si no hay API Key, consultar fuente en vivo de EternoDev-Official
@@ -501,10 +510,24 @@ def fetch_itch_games():
                     "file": file_name,
                     "genre": genre,
                     "desc_lines": desc_lines,
-                    "browser": bool(g.get("p_browser")) or g.get("type") == "html",
-                    "win": bool(g.get("p_windows")),
-                    "linux": bool(g.get("p_linux")),
-                    "mac": bool(g.get("p_osx"))
+                    "browser": bool(g.get("p_browser")) or g.get("type") == "html" or meta.get("browser", False),
+                    "win": bool(g.get("p_windows")) or meta.get("win", False),
+                    "linux": bool(g.get("p_linux")) or meta.get("linux", False),
+                    "mac": bool(g.get("p_osx")) or meta.get("mac", False)
+                })
+
+            if not any("just-an-idiot-dev" in (g.get("url") or "") for g in games):
+                games.append({
+                    "id": "just-an-idiot-dev",
+                    "title": "Just An Idiot Dev",
+                    "url": "https://eternodev.itch.io/just-an-idiot-dev",
+                    "file": "just_an_idiot_dev.png",
+                    "genre": "Adventure",
+                    "desc_lines": KNOWN_DESCRIPTIONS["just-an-idiot-dev"]["desc_lines"],
+                    "browser": True,
+                    "win": True,
+                    "linux": False,
+                    "mac": False
                 })
 
     for idx, game in enumerate(games, start=1):

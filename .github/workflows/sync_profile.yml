@@ -7,6 +7,10 @@ on:
   # Permite ejecutarlo manualmente en cualquier momento desde la pestaña Actions con un clic
   workflow_dispatch:
 
+concurrency:
+  group: sync-profile
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -39,6 +43,7 @@ jobs:
           git add assets/ README.md
           if ! git diff --cached --quiet; then
             git commit -m "chore: auto-sync YouTube & Itch.io cards [skip ci]"
+            git pull --rebase origin main
             git push origin main
           else
             echo "No hay cambios nuevos para sincronizar."
