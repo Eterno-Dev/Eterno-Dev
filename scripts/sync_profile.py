@@ -145,7 +145,7 @@ def fetch_youtube_videos():
         chan_data = fetch_json(f"https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id={channel_id}&key={api_key}")
         uploads_id = chan_data.get("items", [{}])[0].get("contentDetails", {}).get("relatedPlaylists", {}).get("uploads") if chan_data else None
         if uploads_id:
-            items_data = fetch_json(f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={uploads_id}&maxResults=8&key={api_key}")
+            items_data = fetch_json(f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={uploads_id}&maxResults=20&key={api_key}")
             if items_data and "items" in items_data:
                 vids_ids = [i["snippet"]["resourceId"]["videoId"] for i in items_data["items"] if "snippet" in i]
                 if vids_ids:
@@ -215,7 +215,7 @@ def render_youtube_cards(videos):
     w, h = 580, 445
     check_path = "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"
 
-    for idx, video in enumerate(videos[:4], start=1):
+    for idx, video in enumerate(videos, start=1):
         thumb_path = os.path.join(THUMB_DIR, video.get("file", "thumb_rehice.png"))
         if not os.path.exists(thumb_path):
             thumb_path = os.path.join(THUMB_DIR, "thumb_rehice.png")
@@ -308,6 +308,17 @@ def render_youtube_cards(videos):
         with open(card_path, "w", encoding="utf-8") as f:
             f.write(svg)
         print(f"[OK] Tarjeta YouTube {idx} generada con {video['views']}: {video['title']}")
+
+    # Eliminar tarjetas de vídeo sobrantes si se ha borrado alguno
+    for fname in os.listdir(SVG_DIR):
+        if fname.startswith("yt_card_") and fname.endswith(".svg"):
+            try:
+                num = int(fname.replace("yt_card_", "").replace(".svg", ""))
+                if num > len(videos):
+                    os.remove(os.path.join(SVG_DIR, fname))
+                    print(f"[-] Eliminada tarjeta de vídeo obsoleta: {fname}")
+            except:
+                pass
 
 # =============================================================================
 # 2. SINCRONIZACIÓN DINÁMICA DE ITCH.IO
@@ -463,7 +474,9 @@ def fetch_itch_games():
         data = fetch_json("https://api.itch.io/profile/games", headers={'Authorization': f'Bearer {api_key}'})
         if data and "games" in data:
             for g in data["games"]:
-                if g.get("published") is not False:
+                # Comprobar que esté realmente publicado y no sea borrador ni privado
+                is_published = (g.get("published") is True) or (g.get("published") is not False and bool(g.get("published_at")) and not g.get("draft", False))
+                if is_published:
                     slug = (g.get("url") or "").rstrip("/").split("/")[-1]
                     file_name = f"{slug.replace('-', '_')}.png"
                     t_path = os.path.join(ITCH_THUMB_DIR, file_name)
@@ -537,15 +550,26 @@ def fetch_itch_games():
             f.write(svg_code)
         print(f"[OK] Tarjeta Itch.io {idx} generada: {game['title']}")
 
+    # Eliminar tarjetas de Itch.io obsoletas si se despublica o borra algún juego
+    for fname in os.listdir(SVG_DIR):
+        if fname.startswith("itch_card_") and fname.endswith(".svg"):
+            try:
+                num = int(fname.replace("itch_card_", "").replace(".svg", ""))
+                if num > len(games):
+                    os.remove(os.path.join(SVG_DIR, fname))
+                    print(f"[-] Eliminada tarjeta de Itch.io obsoleta: {fname}")
+            except:
+                pass
+
     return games
 
 # =============================================================================
 # 3. CONSTRUCCIÓN AUTOMÁTICA DEL README.MD
 # =============================================================================
 def build_readme(yt_videos, itch_games):
-    # Generar HTML para filas de YouTube (2 por fila)
+    # Generar HTML para filas de YouTube (2 por fila, dinámico para cualquier cantidad)
     yt_rows = []
-    for i in range(0, min(len(yt_videos), 4), 2):
+    for i in range(0, len(yt_videos), 2):
         v1 = yt_videos[i]
         card1 = f'<a href="https://www.youtube.com/watch?v={v1["id"]}" target="_blank"><img src="./assets/svg/yt_card_{i+1}.svg" width="48.5%" alt="{v1["title"]}"></a>'
         if i + 1 < len(yt_videos):
