@@ -683,6 +683,55 @@ def fetch_itch_games():
 # =============================================================================
 # 3. CONSTRUCCIÓN AUTOMÁTICA DEL README.MD
 # =============================================================================
+def generate_footer_banner():
+    footer_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 95" width="1200" height="95">
+  <defs>
+    <!-- Radial Gradient identical to header.svg from center #FBDA50 radiating outwards -->
+    <radialGradient id="radialYellowFooter" cx="50%" cy="50%" r="70%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FBDA50"/>
+      <stop offset="60%" stop-color="#F7C430"/>
+      <stop offset="100%" stop-color="#E59B12"/>
+    </radialGradient>
+
+    <!-- Drop shadow for crisp readability of white text over yellow -->
+    <filter id="footerGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.8" stdDeviation="2.5" flood-color="#5C3B00" flood-opacity="0.45"/>
+    </filter>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;display=swap');
+      .footer-handle {
+        font-family: 'Nunito', -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 19px;
+        fill: #FFFFFF;
+        letter-spacing: 3.5px;
+      }
+      .footer-sub {
+        font-family: 'Nunito', -apple-system, sans-serif;
+        font-weight: 700;
+        font-size: 12.5px;
+        fill: #FFFFFF;
+        letter-spacing: 1.5px;
+        opacity: 0.95;
+      }
+    </style>
+  </defs>
+
+  <!-- Background with smooth rounded corners and radial gradient from #FBDA50 -->
+  <rect width="1200" height="95" rx="16" fill="url(#radialYellowFooter)"/>
+
+  <!-- Centered minimalist text -->
+  <g transform="translate(600, 0)" text-anchor="middle" filter="url(#footerGlow)">
+    <text x="0" y="42" class="footer-handle">@ETERNODEV</text>
+    <text x="0" y="66" class="footer-sub">DESARROLLADOR INDIE • CREADOR DE CONTENIDO • © 2026 ETERNODEV</text>
+  </g>
+</svg>'''
+    footer_path = os.path.join(SVG_DIR, "footer.svg")
+    with open(footer_path, "w", encoding="utf-8") as f:
+        f.write(footer_svg)
+    print("[OK] Banner pie de página footer.svg generado.")
+
 def build_readme(yt_videos, itch_games):
     sections = []
 
@@ -734,16 +783,25 @@ def build_readme(yt_videos, itch_games):
     <img src="./assets/svg/header.svg" width="100%" alt="EternoDev - Open Web">
   </a>
 {body_content}
+  <br>
+  <br>
+
+  <!-- PIE DE PÁGINA AMARILLO (#FBDA50) MINIMALISTA -->
+  <a href="https://eternodev.com" target="_blank">
+    <img src="./assets/svg/footer.svg" width="100%" alt="EternoDev - @eternodev">
+  </a>
+
 </div>
 '''
     with open(README_PATH, "w", encoding="utf-8") as f:
         f.write(readme_content)
-    print("[OK] README.md actualizado dinámicamente con las dos secciones.")
+    print("[OK] README.md actualizado dinámicamente con las dos secciones y pie de página.")
 
 def main():
     print("==================================================")
     print("  SINCRONIZACIÓN DE PERFIL: YOUTUBE & ITCH.IO     ")
     print("==================================================")
+    generate_footer_banner()
     yt_videos = fetch_youtube_videos()
     render_youtube_cards(yt_videos)
     

@@ -40,4 +40,12 @@
     <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank"><img src="./assets/svg/itch_card_5.svg" width="32%" alt="Verdades Incompletas"></a>
   </p>
 
+  <br>
+  <br>
+
+  <!-- PIE DE PÁGINA AMARILLO (#FBDA50) MINIMALISTA -->
+  <a href="https://eternodev.com" target="_blank">
+    <img src="./assets/svg/footer.svg" width="100%" alt="EternoDev - @eternodev">
+  </a>
+
 </div>
