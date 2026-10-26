@@ -23,26 +23,6 @@
   <br>
   <br>
 
-  <!-- SECCIÓN JUEGOS EN ITCH.IO -->
-  <h1>Juegos en <a href="https://eternodev.itch.io" target="_blank"><img src="./assets/svg/itch_badge.svg" height="40" alt="Itch.io" valign="middle"></a></h1>
-
-  <!-- FEED ITCH.IO (SOLO JUEGOS PUBLICADOS) -->
-  <p align="center">
-    <a href="https://eternodev.itch.io/castlecat-rpg" target="_blank"><img src="./assets/svg/itch_card_1.svg" width="32%" alt="CastleCat RPG"></a>
-    &nbsp;
-    <a href="https://eternodev.itch.io/oonga-bunga" target="_blank"><img src="./assets/svg/itch_card_2.svg" width="32%" alt="Oonga Bunga!"></a>
-    &nbsp;
-    <a href="https://eternodev.itch.io/soap-dodger" target="_blank"><img src="./assets/svg/itch_card_3.svg" width="32%" alt="Soap Dodger"></a>
-  </p>
-  <p align="center">
-    <a href="https://eternodev.itch.io/space-blitz" target="_blank"><img src="./assets/svg/itch_card_4.svg" width="32%" alt="Space Blitz"></a>
-    &nbsp;
-    <a href="https://eternodev.itch.io/verdades-incompletas" target="_blank"><img src="./assets/svg/itch_card_5.svg" width="32%" alt="Verdades Incompletas"></a>
-  </p>
-
-  <br>
-  <br>
-
   <!-- PIE DE PÁGINA AMARILLO (#FBDA50) MINIMALISTA -->
   <a href="https://eternodev.com" target="_blank">
     <img src="./assets/svg/footer.svg" width="100%" alt="EternoDev - @eternodev">
